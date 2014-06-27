@@ -27,9 +27,10 @@ TURN_SRV = '/turn_nav'
 # This node parameters
 MAXDEGREES = 180.0
 MAXTIME = 15.0
-SPEED_Z_ROT = 0.15
+SPEED_Z_ROT = 0.05
 PUBLICATION_CMD_VEL_HZ = 20
 
+DEBUG = False
 # Functions borrowed from math_utils.py from Siegfried Gevatter
 # Copied to keep this as simple as possible
 def vector_magnitude(vec):
@@ -197,6 +198,18 @@ class navigation_turn():
             if abs(relative_yaw) > abs(radians):
                 done = True
                 rospy.loginfo("We turned: " + str(math.degrees(relative_yaw)) + " from the " + str(math.degrees(radians * -1)) + " requested")
+                if DEBUG:
+                    rospy.sleep(4)
+                    try:
+                        (curr_trans, curr_rot) = self.listener_.lookupTransform("base_footprint", "odom", rospy.Time(0))
+                    except:
+                        rospy.logerr("Transform exception")
+                    roll, pitch, curr_yaw = euler_from_quaternion(curr_rot)
+                    relative_yaw = start_yaw - curr_yaw
+                    print "start_yaw: " + str(math.degrees(start_yaw)) + " curr_yaw:" + str(math.degrees(curr_yaw))
+                    print "We turned (after waiting 4s for a new tf): " + str(abs(math.degrees(relative_yaw)))
+                    
+                    
             if done:
                 return True
         return False
